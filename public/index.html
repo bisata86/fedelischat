@@ -385,6 +385,44 @@
             transform: translate(2px, -2px);
         }
         
+        .media-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 54px;
+            height: 54px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .media-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .media-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .media-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .message-media {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            margin-top: 5px;
+            object-fit: contain;
+        }
+        
         /* Mobile optimization */
         @media (max-width: 768px) {
             #app-container {
@@ -427,6 +465,12 @@
         <div id="chat-area"></div>
 
         <div id="input-area">
+            <input type="file" id="media-input" accept="image/*,video/mp4" style="display: none;">
+            <button id="media-btn" class="media-btn" title="Send Media" disabled>
+                <svg viewBox="0 0 24 24">
+                    <path d="M21.02 5H2.98c-.53 0-1.04.21-1.4.59C1.21 5.97 1 6.47 1 7v10c0 .53.21 1.04.59 1.41.38.38.88.59 1.41.59h18.04c.53 0 1.04-.21 1.41-.59.38-.38.59-.88.59-1.41V7c0-.53-.21-1.03-.59-1.41-.37-.38-.88-.59-1.41-.59zM21 17H3V7h18v10zm-3.5-7c-.83 0-1.5-.67-1.5-1.5S16.67 7 17.5 7 19 7.67 19 8.5 18.33 10 17.5 10zm-4.7 1.8L10 14.5 7.5 11l-3 4h15l-4.7-6.2z"/>
+                </svg>
+            </button>
             <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off" disabled>
             <button id="send-btn" disabled>
                 <svg viewBox="0 0 24 24">
@@ -446,6 +490,8 @@
         const chatArea = document.getElementById('chat-area');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
+        const mediaBtn = document.getElementById('media-btn');
+        const mediaInput = document.getElementById('media-input');
         
         let currentUsername = '';
 
@@ -464,6 +510,7 @@
                 
                 messageInput.disabled = false;
                 sendBtn.disabled = false;
+                mediaBtn.disabled = false;
                 messageInput.focus();
             }
         }
@@ -497,6 +544,38 @@
             if (e.key === 'Enter') sendMessage();
         });
 
+        mediaBtn.addEventListener('click', () => {
+            mediaInput.click();
+        });
+
+        mediaInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File is too large! Maximum size is 5MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                socket.emit('chat_media', {
+                    fileData: ev.target.result,
+                    fileType: file.type
+                });
+            };
+            reader.readAsDataURL(file);
+            mediaInput.value = '';
+        });
+
+        function appendMessageElement(msgEl) {
+            chatArea.appendChild(msgEl);
+            chatArea.scrollTo({
+                top: chatArea.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
         socket.on('chat_message', (data) => {
             const msgEl = document.createElement('div');
             msgEl.classList.add('message');
@@ -519,12 +598,39 @@
                 msgEl.appendChild(textEl);
             }
             
-            chatArea.appendChild(msgEl);
-            // Smooth scroll to bottom
-            chatArea.scrollTo({
-                top: chatArea.scrollHeight,
-                behavior: 'smooth'
-            });
+            appendMessageElement(msgEl);
+        });
+
+        socket.on('chat_media', (data) => {
+            const msgEl = document.createElement('div');
+            msgEl.classList.add('message');
+            
+            if (data.username === currentUsername) {
+                msgEl.classList.add('my-message');
+            } else {
+                msgEl.classList.add('other-message');
+                const userEl = document.createElement('div');
+                userEl.classList.add('username');
+                userEl.textContent = data.username;
+                msgEl.appendChild(userEl);
+            }
+
+            let mediaEl;
+            if (data.fileType.startsWith('image/')) {
+                mediaEl = document.createElement('img');
+                mediaEl.src = data.fileData;
+            } else if (data.fileType.startsWith('video/')) {
+                mediaEl = document.createElement('video');
+                mediaEl.src = data.fileData;
+                mediaEl.controls = true;
+            }
+            
+            if (mediaEl) {
+                mediaEl.classList.add('message-media');
+                msgEl.appendChild(mediaEl);
+            }
+
+            appendMessageElement(msgEl);
         });
         
         // Auto focus login input

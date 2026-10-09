@@ -34,6 +34,17 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('chat_media', (data) => {
+        if (data.fileData) {
+            io.emit('chat_media', {
+                username: socket.username || 'Anonymous',
+                fileData: data.fileData,
+                fileType: data.fileType,
+                type: 'user'
+            });
+        }
+    });
+
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
         if (socket.username) {
