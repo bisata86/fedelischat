@@ -1,642 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fedelissimi Chat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.5);
-            --secondary: #8b5cf6;
-            --bg-dark: #0f172a;
-            --glass-bg: rgba(30, 41, 59, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --msg-user: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            --msg-other: rgba(255, 255, 255, 0.05);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Animated Background */
-        .bg-shapes {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .shape {
-            position: absolute;
-            filter: blur(80px);
-            opacity: 0.5;
-            animation: float 20s infinite ease-in-out;
-        }
-
-        .shape-1 {
-            top: -10%;
-            left: -10%;
-            width: 50vw;
-            height: 50vw;
-            background: rgba(99, 102, 241, 0.3);
-            animation-delay: 0s;
-        }
-
-        .shape-2 {
-            bottom: -20%;
-            right: -10%;
-            width: 60vw;
-            height: 60vw;
-            background: rgba(139, 92, 246, 0.2);
-            animation-delay: -5s;
-        }
-        
-        .shape-3 {
-            top: 40%;
-            left: 50%;
-            width: 30vw;
-            height: 30vw;
-            background: rgba(236, 72, 153, 0.2);
-            animation-delay: -10s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-
-        #app-container {
-            width: 100%;
-            max-width: 900px;
-            height: 90vh;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-            z-index: 10;
-        }
-
-        /* Header */
-        header {
-            padding: 24px 30px;
-            background: rgba(15, 23, 42, 0.4);
-            border-bottom: 1px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        header h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            background: linear-gradient(to right, #a78bfa, #f472b6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            background: #22c55e;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #22c55e;
-        }
-
-        /* Login Overlay */
-        #login-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(15px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 30;
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .login-box {
-            text-align: center;
-            padding: 50px;
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            transform: translateY(0);
-            transition: transform 0.3s;
-        }
-        
-        .login-box:hover {
-            transform: translateY(-5px);
-        }
-
-        .login-box h2 {
-            margin-bottom: 30px;
-            font-weight: 600;
-            font-size: 2rem;
-            color: #fff;
-        }
-
-        .input-group {
-            position: relative;
-            margin-bottom: 25px;
-        }
-
-        .login-box input {
-            padding: 16px 24px;
-            width: 300px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.15);
-            background: rgba(0,0,0,0.2);
-            color: white;
-            font-size: 1.1rem;
-            font-family: inherit;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .login-box input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
-            background: rgba(0,0,0,0.4);
-        }
-
-        .login-box button {
-            padding: 16px 32px;
-            width: 100%;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 20px -10px var(--primary-glow);
-        }
-
-        .login-box button:hover {
-            box-shadow: 0 15px 25px -10px var(--primary-glow);
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-        }
-        
-        .login-box button:active {
-            transform: translateY(1px);
-        }
-
-        /* Chat Area */
-        #chat-area {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.2) transparent;
-        }
-
-        #chat-area::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        #chat-area::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        #chat-area::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.15);
-            border-radius: 10px;
-        }
-        
-        #chat-area::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.25);
-        }
-
-        .message {
-            max-width: 80%;
-            padding: 14px 20px;
-            border-radius: 20px;
-            animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-            transform: translateY(20px);
-            word-wrap: break-word;
-            position: relative;
-            line-height: 1.5;
-        }
-
-        @keyframes slideUpFade {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message.system {
-            align-self: center;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(5px);
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            padding: 6px 16px;
-            border-radius: 100px;
-            max-width: 100%;
-        }
-
-        .message.my-message {
-            align-self: flex-end;
-            background: var(--msg-user);
-            color: white;
-            border-bottom-right-radius: 4px;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-        }
-
-        .message.other-message {
-            align-self: flex-start;
-            background: var(--msg-other);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: var(--text-main);
-            border-bottom-left-radius: 4px;
-        }
-
-        .message .username {
-            font-size: 0.8rem;
-            margin-bottom: 6px;
-            color: var(--text-muted);
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        
-        .my-message .username {
-            display: none;
-        }
-
-        /* Input Area */
-        #input-area {
-            padding: 24px 30px;
-            background: rgba(15, 23, 42, 0.6);
-            display: flex;
-            gap: 15px;
-            border-top: 1px solid var(--glass-border);
-            align-items: center;
-        }
-
-        #message-input {
-            flex: 1;
-            padding: 16px 24px;
-            border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(0,0,0,0.25);
-            color: white;
-            font-size: 1.05rem;
-            font-family: inherit;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        #message-input:focus {
-            border-color: var(--primary);
-            background: rgba(0,0,0,0.4);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-        }
-
-        #message-input::placeholder {
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        #send-btn {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 54px;
-            height: 54px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 15px var(--primary-glow);
-        }
-
-        #send-btn:hover:not(:disabled) {
-            transform: scale(1.08) rotate(5deg);
-            box-shadow: 0 8px 25px var(--primary-glow);
-        }
-        
-        #send-btn:active:not(:disabled) {
-            transform: scale(0.95);
-        }
-        
-        #send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: none;
-        }
-
-        #send-btn svg {
-            width: 22px;
-            height: 22px;
-            fill: currentColor;
-            margin-left: 3px;
-            transition: transform 0.3s;
-        }
-        
-        #send-btn:hover:not(:disabled) svg {
-            transform: translate(2px, -2px);
-        }
-        
-        .media-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 54px;
-            height: 54px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .media-btn:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
-
-        .media-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .media-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-
-        .message-media {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 12px;
-            margin-top: 5px;
-            object-fit: contain;
-        }
-        
-        /* Mobile optimization */
-        @media (max-width: 768px) {
-            #app-container {
-                height: 100vh;
-                border-radius: 0;
-                border: none;
-            }
-            .shape {
-                display: none;
-            }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fedelissimi — Secure End-to-End Encrypted WebChat</title>
+    <meta name="description" content="Fedelissimi is a next-generation end-to-end encrypted webchat with zero-knowledge architecture, media sharing, and real-time messaging.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
-    <div class="bg-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
+    <!-- Ambient Floating Orbs -->
+    <div class="ambient-bg" aria-hidden="true">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <div class="ambient-orb orb-3"></div>
     </div>
 
+    <!-- Main Application Shell -->
     <div id="app-container">
-        <!-- Login Overlay -->
+        <!-- Join / Login Overlay -->
         <div id="login-overlay">
-            <div class="login-box">
-                <h2>Welcome to<br>Fedelissimi</h2>
-                <div class="input-group">
-                    <input type="text" id="username-input" placeholder="What's your name?" autocomplete="off">
+            <div class="login-card">
+                <div class="login-emblem">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <circle cx="12" cy="11" r="1.5"/>
+                        <path d="M12 12.5v3"/>
+                    </svg>
                 </div>
-                <button id="join-btn">Join Chat</button>
+                <h2>Fedelissimi</h2>
+                <p>Private &amp; End-to-End Encrypted Group Chat</p>
+
+                <div class="login-input-wrap">
+                    <input type="text" id="username-input" class="login-input" placeholder="Choose a display name..." autocomplete="off" maxlength="24" autofocus>
+                </div>
+
+                <button id="join-btn" class="btn-primary-glow">
+                    <span>Enter Secure Room</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+
+                <div id="crypto-status-step" class="crypto-status-step">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <span id="crypto-step-text">Generating RSA-2048 keypair...</span>
+                </div>
             </div>
         </div>
 
-        <header>
-            <h1>
-                <div class="status-dot"></div>
-                Fedelissimi
-            </h1>
-        </header>
+        <!-- Left Sidebar -->
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-wrapper">
+                    <div class="brand-logo-badge">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="M9 12l2 2 4-4"/>
+                        </svg>
+                    </div>
+                    <div class="brand-info">
+                        <h1>Fedelissimi</h1>
+                        <span class="brand-badge">
+                            <span class="pulse-dot"></span>
+                            E2EE Active
+                        </span>
+                    </div>
+                </div>
+            </div>
 
-        <div id="chat-area"></div>
+            <div class="sidebar-content">
+                <!-- Security Card Banner -->
+                <div id="security-card-trigger" class="security-card" title="Click to view encryption keys and verification info">
+                    <div class="security-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <div class="security-details">
+                        <h4>Zero Knowledge Relay</h4>
+                        <p>AES-256-GCM &bull; RSA-2048<br>Server cannot read messages</p>
+                    </div>
+                </div>
 
-        <div id="input-area">
-            <input type="file" id="media-input" accept="image/*,video/mp4" style="display: none;">
-            <button id="media-btn" class="media-btn" title="Send Media" disabled>
-                <svg viewBox="0 0 24 24">
-                    <path d="M21.02 5H2.98c-.53 0-1.04.21-1.4.59C1.21 5.97 1 6.47 1 7v10c0 .53.21 1.04.59 1.41.38.38.88.59 1.41.59h18.04c.53 0 1.04-.21 1.41-.59.38-.38.59-.88.59-1.41V7c0-.53-.21-1.03-.59-1.41-.37-.38-.88-.59-1.41-.59zM21 17H3V7h18v10zm-3.5-7c-.83 0-1.5-.67-1.5-1.5S16.67 7 17.5 7 19 7.67 19 8.5 18.33 10 17.5 10zm-4.7 1.8L10 14.5 7.5 11l-3 4h15l-4.7-6.2z"/>
+                <!-- Channels / Room List -->
+                <div>
+                    <div class="nav-section-title">
+                        <span>Rooms</span>
+                        <span style="font-size: 0.68rem; color: var(--accent-emerald);">SECURE</span>
+                    </div>
+                    <div class="channel-item active">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" y1="9" x2="20" y2="9"></line>
+                            <line x1="4" y1="15" x2="20" y2="15"></line>
+                            <line x1="10" y1="3" x2="8" y2="21"></line>
+                            <line x1="16" y1="3" x2="14" y2="21"></line>
+                        </svg>
+                        <span>lounge-encrypted</span>
+                    </div>
+                </div>
+
+                <!-- Online Participants -->
+                <div>
+                    <div class="nav-section-title">
+                        <span>Online Participants</span>
+                        <span id="active-user-count" style="font-size: 0.75rem; color: var(--primary-light);">1</span>
+                    </div>
+                    <div id="users-list" class="users-list">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar User Profile Footer -->
+            <div class="sidebar-footer">
+                <div class="my-profile-widget">
+                    <div id="my-avatar-display" class="user-avatar">?</div>
+                    <div class="user-info-text">
+                        <div id="my-username-display" class="user-name-line">Guest</div>
+                        <div style="font-size: 0.7rem; color: var(--accent-emerald); display: flex; align-items: center; gap: 4px;">
+                            <span class="pulse-dot" style="width: 5px; height: 5px;"></span> Encrypted Peer
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button id="sound-toggle-btn" class="icon-btn active" title="Toggle audio chime">
+                        <svg id="sound-icon-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        </svg>
+                        <svg id="sound-icon-off" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <line x1="23" y1="9" x2="17" y2="15"></line>
+                            <line x1="17" y1="9" x2="23" y2="15"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main id="main-chat">
+            <!-- Chat Header -->
+            <header class="chat-header">
+                <div class="header-left">
+                    <button id="sidebar-toggle-btn" class="mobile-menu-btn" title="Toggle sidebar">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="room-meta">
+                        <h2>
+                            <span># lounge-encrypted</span>
+                        </h2>
+                        <div class="room-subtitle">
+                            <span class="e2ee-pill">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                </svg>
+                                256-bit AES-GCM
+                            </span>
+                            <span>&bull;</span>
+                            <span id="room-online-text">Connecting...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <button id="security-info-btn" class="icon-btn" title="Cryptographic Details &amp; Fingerprint">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="M12 8v4"/>
+                            <path d="M12 16h.01"/>
+                        </svg>
+                    </button>
+                    <button id="clear-chat-btn" class="icon-btn" title="Clear local screen">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Message Scroll Area -->
+            <div id="chat-area">
+                <div class="e2ee-notice-card">
+                    <div class="notice-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h3>Zero-Knowledge End-to-End Encryption</h3>
+                    <p>All text, images, and GIFs in this session are cryptographically encrypted in your browser using AES-GCM and exchanged with RSA-OAEP. The relay server cannot read or store your content.</p>
+                </div>
+            </div>
+
+            <!-- Typing Banner -->
+            <div id="typing-indicator">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+                <span id="typing-user-text">Someone is typing...</span>
+            </div>
+
+            <!-- Drag & Drop Overlay -->
+            <div id="drag-drop-overlay">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary-light)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
                 </svg>
-            </button>
-            <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off" disabled>
-            <button id="send-btn" disabled>
-                <svg viewBox="0 0 24 24">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                </svg>
-            </button>
+                <h3 style="font-size: 1.2rem; font-weight: 700;">Drop file to encrypt &amp; send</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Images, GIFs, and Videos (up to 10MB)</p>
+            </div>
+
+            <!-- GIF Picker Popover -->
+            <div id="gif-popover" class="popover-menu">
+                <div class="popover-header">
+                    <input type="text" id="gif-search-input" class="popover-search-input" placeholder="Search animated GIFs...">
+                </div>
+                <div class="gif-categories">
+                    <button class="gif-cat-chip active" data-cat="reactions">Reactions</button>
+                    <button class="gif-cat-chip" data-cat="celebrate">Party</button>
+                    <button class="gif-cat-chip" data-cat="hacker">Cyber</button>
+                    <button class="gif-cat-chip" data-cat="cat">Cats</button>
+                    <button class="gif-cat-chip" data-cat="anime">Anime</button>
+                    <button class="gif-cat-chip" data-cat="memes">Memes</button>
+                </div>
+                <div id="gif-grid" class="gif-grid"></div>
+            </div>
+
+            <!-- Emoji Picker Popover -->
+            <div id="emoji-popover" class="popover-menu">
+                <div class="popover-header">
+                    <input type="text" id="emoji-search-input" class="popover-search-input" placeholder="Search emojis...">
+                </div>
+                <div id="emoji-grid" class="emoji-grid"></div>
+            </div>
+
+            <!-- Smart Input Area -->
+            <div id="input-wrapper">
+                <div class="composer-bar">
+                    <div class="composer-actions-left">
+                        <input type="file" id="media-input" accept="image/*,video/mp4" style="display: none;">
+                        <button id="media-btn" class="composer-btn" title="Send encrypted media (Photo / Video / GIF)" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                        </button>
+                        <button id="gif-btn" class="composer-btn" title="Choose GIF" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M8 12h2v3H8zm6-3v6m0-3h2m-5-3h4"></path>
+                            </svg>
+                        </button>
+                        <button id="emoji-btn" class="composer-btn" title="Emoji picker" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <input type="text" id="message-input" placeholder="Message #lounge-encrypted (Encrypted)..." autocomplete="off" disabled>
+
+                    <button id="send-btn" title="Send encrypted message" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Security Info Modal -->
+    <div id="security-modal" class="app-modal">
+        <div class="modal-content-card">
+            <div class="modal-header">
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                    Cryptographic Verification
+                </h3>
+                <button id="close-security-btn" class="icon-btn" title="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
+                    Fedelissimi Chat leverages the standard W3C <strong>Web Cryptography API</strong> built natively into modern browsers. Your private key never leaves this memory segment.
+                </p>
+
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px;">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">Payload Encryption</div>
+                    <div style="font-size: 0.92rem; font-weight: 600; color: var(--accent-emerald);">AES-GCM (256-bit symmetric key)</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Unique 96-bit initialization vector (IV) generated per message</div>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px;">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">Key Exchange</div>
+                    <div style="font-size: 0.92rem; font-weight: 600; color: var(--primary-light);">RSA-OAEP (2048-bit asymmetric with SHA-256)</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Automated ephemeral peer-to-peer distribution</div>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px;">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">Your RSA Public Key Fingerprint</div>
+                    <div id="sec-pubkey-fingerprint" style="font-family: monospace; font-size: 0.75rem; color: var(--text-secondary); word-break: break-all; background: rgba(0,0,0,0.4); padding: 8px; border-radius: 6px;">Initializing...</div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Media Lightbox Modal -->
+    <div id="lightbox-modal" class="app-modal">
+        <div class="modal-content-card">
+            <img id="lightbox-image" src="" alt="Enlarged media preview">
+            <div class="lightbox-controls">
+                <a id="lightbox-download" class="lightbox-btn" download="fedelissimi-media">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download
+                </a>
+                <button id="close-lightbox-btn" class="lightbox-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.IO & Chat App Scripts -->
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        
-        const loginOverlay = document.getElementById('login-overlay');
-        const usernameInput = document.getElementById('username-input');
-        const joinBtn = document.getElementById('join-btn');
-        const chatArea = document.getElementById('chat-area');
-        const messageInput = document.getElementById('message-input');
-        const sendBtn = document.getElementById('send-btn');
-        const mediaBtn = document.getElementById('media-btn');
-        const mediaInput = document.getElementById('media-input');
-        
-        let currentUsername = '';
-
-        function joinChat() {
-            const username = usernameInput.value.trim();
-            if (username) {
-                currentUsername = username;
-                socket.emit('set_username', username);
-                
-                // Animate overlay out
-                loginOverlay.style.opacity = '0';
-                loginOverlay.style.transform = 'scale(1.05)';
-                setTimeout(() => {
-                    loginOverlay.style.visibility = 'hidden';
-                }, 600);
-                
-                messageInput.disabled = false;
-                sendBtn.disabled = false;
-                mediaBtn.disabled = false;
-                messageInput.focus();
-            }
-        }
-
-        joinBtn.addEventListener('click', joinChat);
-        usernameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') joinChat();
-        });
-
-        // Enable button when typing
-        messageInput.addEventListener('input', () => {
-            if (messageInput.value.trim() !== '') {
-                sendBtn.style.opacity = '1';
-            } else {
-                sendBtn.style.opacity = '0.7';
-            }
-        });
-
-        function sendMessage() {
-            const msg = messageInput.value;
-            if (msg.trim()) {
-                socket.emit('chat_message', msg);
-                messageInput.value = '';
-                messageInput.focus();
-                sendBtn.style.opacity = '0.7';
-            }
-        }
-
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        mediaBtn.addEventListener('click', () => {
-            mediaInput.click();
-        });
-
-        mediaInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            if (file.size > 5 * 1024 * 1024) {
-                alert('File is too large! Maximum size is 5MB.');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                socket.emit('chat_media', {
-                    fileData: ev.target.result,
-                    fileType: file.type
-                });
-            };
-            reader.readAsDataURL(file);
-            mediaInput.value = '';
-        });
-
-        function appendMessageElement(msgEl) {
-            chatArea.appendChild(msgEl);
-            chatArea.scrollTo({
-                top: chatArea.scrollHeight,
-                behavior: 'smooth'
-            });
-        }
-
-        socket.on('chat_message', (data) => {
-            const msgEl = document.createElement('div');
-            msgEl.classList.add('message');
-            
-            if (data.type === 'system') {
-                msgEl.classList.add('system');
-                msgEl.textContent = data.text;
-            } else {
-                if (data.username === currentUsername) {
-                    msgEl.classList.add('my-message');
-                } else {
-                    msgEl.classList.add('other-message');
-                    const userEl = document.createElement('div');
-                    userEl.classList.add('username');
-                    userEl.textContent = data.username;
-                    msgEl.appendChild(userEl);
-                }
-                const textEl = document.createElement('div');
-                textEl.textContent = data.text;
-                msgEl.appendChild(textEl);
-            }
-            
-            appendMessageElement(msgEl);
-        });
-
-        socket.on('chat_media', (data) => {
-            const msgEl = document.createElement('div');
-            msgEl.classList.add('message');
-            
-            if (data.username === currentUsername) {
-                msgEl.classList.add('my-message');
-            } else {
-                msgEl.classList.add('other-message');
-                const userEl = document.createElement('div');
-                userEl.classList.add('username');
-                userEl.textContent = data.username;
-                msgEl.appendChild(userEl);
-            }
-
-            let mediaEl;
-            if (data.fileType.startsWith('image/')) {
-                mediaEl = document.createElement('img');
-                mediaEl.src = data.fileData;
-            } else if (data.fileType.startsWith('video/')) {
-                mediaEl = document.createElement('video');
-                mediaEl.src = data.fileData;
-                mediaEl.controls = true;
-            }
-            
-            if (mediaEl) {
-                mediaEl.classList.add('message-media');
-                msgEl.appendChild(mediaEl);
-            }
-
-            appendMessageElement(msgEl);
-        });
-        
-        // Auto focus login input
-        window.onload = () => {
-            usernameInput.focus();
-        };
-    </script>
+    <script src="/chat.js"></script>
 </body>
+
 </html>
