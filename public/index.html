@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fedelissimi Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --secondary: #8b5cf6;
+            --bg-dark: #0f172a;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --msg-user: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --msg-other: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .bg-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.5;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .shape-1 {
+            top: -10%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: rgba(99, 102, 241, 0.3);
+            animation-delay: 0s;
+        }
+
+        .shape-2 {
+            bottom: -20%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: rgba(139, 92, 246, 0.2);
+            animation-delay: -5s;
+        }
+        
+        .shape-3 {
+            top: 40%;
+            left: 50%;
+            width: 30vw;
+            height: 30vw;
+            background: rgba(236, 72, 153, 0.2);
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header */
+        header {
+            padding: 24px 30px;
+            background: rgba(15, 23, 42, 0.4);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #22c55e;
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .login-box {
+            text-align: center;
+            padding: 50px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            transform: translateY(0);
+            transition: transform 0.3s;
+        }
+        
+        .login-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .login-box h2 {
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .login-box input {
+            padding: 16px 24px;
+            width: 300px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-size: 1.1rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .login-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+            background: rgba(0,0,0,0.4);
+        }
+
+        .login-box button {
+            padding: 16px 32px;
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px -10px var(--primary-glow);
+        }
+
+        .login-box button:hover {
+            box-shadow: 0 15px 25px -10px var(--primary-glow);
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+        
+        .login-box button:active {
+            transform: translateY(1px);
+        }
+
+        /* Chat Area */
+        #chat-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.2) transparent;
+        }
+
+        #chat-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        #chat-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        #chat-area::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+        }
+        
+        #chat-area::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 14px 20px;
+            border-radius: 20px;
+            animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+            word-wrap: break-word;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        @keyframes slideUpFade {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.system {
+            align-self: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 6px 16px;
+            border-radius: 100px;
+            max-width: 100%;
+        }
+
+        .message.my-message {
+            align-self: flex-end;
+            background: var(--msg-user);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .message.other-message {
+            align-self: flex-start;
+            background: var(--msg-other);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message .username {
+            font-size: 0.8rem;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .my-message .username {
+            display: none;
+        }
+
+        /* Input Area */
+        #input-area {
+            padding: 24px 30px;
+            background: rgba(15, 23, 42, 0.6);
+            display: flex;
+            gap: 15px;
+            border-top: 1px solid var(--glass-border);
+            align-items: center;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 16px 24px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.25);
+            color: white;
+            font-size: 1.05rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #message-input:focus {
+            border-color: var(--primary);
+            background: rgba(0,0,0,0.4);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        #message-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        #send-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 54px;
+            height: 54px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        #send-btn:hover:not(:disabled) {
+            transform: scale(1.08) rotate(5deg);
+            box-shadow: 0 8px 25px var(--primary-glow);
+        }
+        
+        #send-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+        
+        #send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+
+        #send-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+            margin-left: 3px;
+            transition: transform 0.3s;
+        }
+        
+        #send-btn:hover:not(:disabled) svg {
+            transform: translate(2px, -2px);
+        }
+        
+        /* Mobile optimization */
+        @media (max-width: 768px) {
+            #app-container {
+                height: 100vh;
+                border-radius: 0;
+                border: none;
+            }
+            .shape {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div id="app-container">
+        <!-- Login Overlay -->
+        <div id="login-overlay">
+            <div class="login-box">
+                <h2>Welcome to<br>Fedelissimi</h2>
+                <div class="input-group">
+                    <input type="text" id="username-input" placeholder="What's your name?" autocomplete="off">
+                </div>
+                <button id="join-btn">Join Chat</button>
+            </div>
+        </div>
+
+        <header>
+            <h1>
+                <div class="status-dot"></div>
+                Fedelissimi
+            </h1>
+        </header>
+
+        <div id="chat-area"></div>
+
+        <div id="input-area">
+            <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off" disabled>
+            <button id="send-btn" disabled>
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        
+        const loginOverlay = document.getElementById('login-overlay');
+        const usernameInput = document.getElementById('username-input');
+        const joinBtn = document.getElementById('join-btn');
+        const chatArea = document.getElementById('chat-area');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        
+        let currentUsername = '';
+
+        function joinChat() {
+            const username = usernameInput.value.trim();
+            if (username) {
+                currentUsername = username;
+                socket.emit('set_username', username);
+                
+                // Animate overlay out
+                loginOverlay.style.opacity = '0';
+                loginOverlay.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    loginOverlay.style.visibility = 'hidden';
+                }, 600);
+                
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        joinBtn.addEventListener('click', joinChat);
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') joinChat();
+        });
+
+        // Enable button when typing
+        messageInput.addEventListener('input', () => {
+            if (messageInput.value.trim() !== '') {
+                sendBtn.style.opacity = '1';
+            } else {
+                sendBtn.style.opacity = '0.7';
+            }
+        });
+
+        function sendMessage() {
+            const msg = messageInput.value;
+            if (msg.trim()) {
+                socket.emit('chat_message', msg);
+                messageInput.value = '';
+                messageInput.focus();
+                sendBtn.style.opacity = '0.7';
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        socket.on('chat_message', (data) => {
+            const msgEl = document.createElement('div');
+            msgEl.classList.add('message');
+            
+            if (data.type === 'system') {
+                msgEl.classList.add('system');
+                msgEl.textContent = data.text;
+            } else {
+                if (data.username === currentUsername) {
+                    msgEl.classList.add('my-message');
+                } else {
+                    msgEl.classList.add('other-message');
+                    const userEl = document.createElement('div');
+                    userEl.classList.add('username');
+                    userEl.textContent = data.username;
+                    msgEl.appendChild(userEl);
+                }
+                const textEl = document.createElement('div');
+                textEl.textContent = data.text;
+                msgEl.appendChild(textEl);
+            }
+            
+            chatArea.appendChild(msgEl);
+            // Smooth scroll to bottom
+            chatArea.scrollTo({
+                top: chatArea.scrollHeight,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Auto focus login input
+        window.onload = () => {
+            usernameInput.focus();
+        };
+    </script>
+</body>
+</html>
