@@ -4,6 +4,22 @@
 
 const socket = io();
 
+// Auto-reconnect session recovery
+socket.on('connect', async () => {
+    if (typeof currentUsername !== 'undefined' && currentUsername && typeof rsaKeyPair !== 'undefined' && rsaKeyPair) {
+        try {
+            const jwkPublic = await exportKey(rsaKeyPair.publicKey);
+            socket.emit('set_username', {
+                username: currentUsername,
+                publicKey: jwkPublic,
+                room: typeof currentRoom !== 'undefined' ? currentRoom : 'lounge-encrypted'
+            });
+        } catch(e) {
+            console.error('Error recovering session:', e);
+        }
+    }
+});
+
 // UI Elements
 const loginOverlay = document.getElementById('login-overlay');
 const usernameInput = document.getElementById('username-input');
@@ -35,12 +51,6 @@ const myUsernameDisplay = document.getElementById('my-username-display');
 const soundToggleBtn = document.getElementById('sound-toggle-btn');
 const soundIconOn = document.getElementById('sound-icon-on');
 const soundIconOff = document.getElementById('sound-icon-off');
-
-const securityCardTrigger = document.getElementById('security-card-trigger');
-const securityInfoBtn = document.getElementById('security-info-btn');
-const securityModal = document.getElementById('security-modal');
-const closeSecurityBtn = document.getElementById('close-security-btn');
-const secPubkeyFingerprint = document.getElementById('sec-pubkey-fingerprint');
 
 const lightboxModal = document.getElementById('lightbox-modal');
 const lightboxImage = document.getElementById('lightbox-image');
@@ -334,6 +344,16 @@ function switchRoom(targetRoomName) {
     closeRoomModal();
     socket.emit('join_room', { room: target });
     setActiveRoomUI(target);
+
+    // Safety fallback for room switch key
+    setTimeout(async () => {
+        if (!roomKeys.has(target)) {
+            console.warn(`Handshake timed out for #${target}. Forcing key generation.`);
+            const newKey = await generateAES();
+            roomKeys.set(target, newKey);
+            if (currentRoom === target) updateComposerState();
+        }
+    }, 4000);
 }
 
 function renderRoomsList() {
@@ -462,16 +482,14 @@ async function joinChat() {
 
     joinBtn.disabled = true;
     cryptoStatusStep.style.display = 'flex';
-    cryptoStepText.textContent = "Generating 2048-bit RSA keys...";
+    cryptoStepText.textContent = "Connecting...";
 
     try {
         // Step 1: Generate RSA Keypair
         rsaKeyPair = await generateRSA();
         const jwkPublic = await exportKey(rsaKeyPair.publicKey);
-        const fingerprint = await computeKeyFingerprint(jwkPublic);
-        secPubkeyFingerprint.textContent = fingerprint;
 
-        cryptoStepText.textContent = `Establishing E2EE channel #${currentRoom}...`;
+        cryptoStepText.textContent = `Joining #${currentRoom}...`;
         await new Promise(r => setTimeout(r, 350));
 
         currentUsername = username;
@@ -482,6 +500,16 @@ async function joinChat() {
             publicKey: jwkPublic,
             room: currentRoom
         });
+
+        // Safety fallback for initial room key
+        setTimeout(async () => {
+            if (!roomKeys.has(currentRoom)) {
+                console.warn(`Handshake timed out for #${currentRoom}. Forcing key generation.`);
+                const newKey = await generateAES();
+                roomKeys.set(currentRoom, newKey);
+                updateComposerState();
+            }
+        }, 4000);
 
         // Step 3: Update local UI
         myUsernameDisplay.textContent = username;
@@ -536,7 +564,10 @@ socket.on('generate_group_key', async (data) => {
 socket.on('request_key_share', async (data) => {
     const room = data.room || currentRoom;
     const key = roomKeys.get(room);
-    if (!key) return;
+    if (!key) {
+        socket.emit('key_share_failed', { targetId: data.targetId, room: room });
+        return;
+    }
     try {
         const targetPubKey = await importPublicKey(data.publicKey);
         const rawAes = await exportAESKey(key);
@@ -971,6 +1002,8 @@ socket.on('chat_media', async (data) => {
         bubble.textContent = "[Encrypted Media — Decryption Failed]";
     }
 
+    contentBox.appendChild(bubble);
+
     const actionBar = createHoverActionBar(wrapper.id, null, msgRoom);
     bubble.appendChild(actionBar);
 
@@ -1088,10 +1121,20 @@ function renderGifs(category = 'reactions', filterQuery = '') {
         item.addEventListener('click', async () => {
             gifPopover.classList.remove('open');
             try {
-                const res = await fetch(url);
-                const blob = await res.blob();
-                const file = new File([blob], 'encrypted.gif', { type: 'image/gif' });
-                sendFile(file);
+                const key = roomKeys.get(currentRoom);
+                if (!key) {
+                    alert(`Encryption handshake not ready yet.`);
+                    return;
+                }
+                const { encrypted, iv } = await encryptAES(key, url);
+                socket.emit('chat_media', {
+                    room: currentRoom,
+                    encryptedFileData: encrypted,
+                    iv: iv,
+                    fileType: 'image/gif',
+                    fileName: 'giphy.gif'
+                });
+                playSound('send');
             } catch (e) {
                 console.error("Error sending gif", e);
             }
@@ -1185,17 +1228,6 @@ document.addEventListener('click', (e) => {
         sidebar.classList.remove('mobile-open');
     }
 });
-
-// Security Modal
-function openSecurityModal() {
-    securityModal.classList.add('open');
-}
-function closeSecurityModal() {
-    securityModal.classList.remove('open');
-}
-securityCardTrigger.addEventListener('click', openSecurityModal);
-securityInfoBtn.addEventListener('click', openSecurityModal);
-closeSecurityBtn.addEventListener('click', closeSecurityModal);
 
 // Lightbox Modal
 closeLightboxBtn.addEventListener('click', () => {

@@ -33,7 +33,7 @@
                     </svg>
                 </div>
                 <h2>Fedelissimi</h2>
-                <p>Private &amp; End-to-End Encrypted Group Chat</p>
+                <p>Private Group Chat</p>
 
                 <div class="login-input-wrap">
                     <input type="text" id="username-input" class="login-input" placeholder="Choose a display name..." autocomplete="off" maxlength="24" autofocus>
@@ -73,29 +73,11 @@
                     </div>
                     <div class="brand-info">
                         <h1>Fedelissimi</h1>
-                        <span class="brand-badge">
-                            <span class="pulse-dot"></span>
-                            E2EE Active
-                        </span>
                     </div>
                 </div>
             </div>
 
             <div class="sidebar-content">
-                <!-- Security Card Banner -->
-                <div id="security-card-trigger" class="security-card" title="Click to view encryption keys and verification info">
-                    <div class="security-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
-                    </div>
-                    <div class="security-details">
-                        <h4>Zero Knowledge Relay</h4>
-                        <p>AES-256-GCM &bull; RSA-2048<br>Server cannot read messages</p>
-                    </div>
-                </div>
-
                 <!-- Channels / Room List -->
                 <div>
                     <div class="nav-section-title">
@@ -131,9 +113,6 @@
                     <div id="my-avatar-display" class="user-avatar">?</div>
                     <div class="user-info-text">
                         <div id="my-username-display" class="user-name-line">Guest</div>
-                        <div style="font-size: 0.7rem; color: var(--accent-emerald); display: flex; align-items: center; gap: 4px;">
-                            <span class="pulse-dot" style="width: 5px; height: 5px;"></span> Encrypted Peer
-                        </div>
                     </div>
                 </div>
 
@@ -170,11 +149,11 @@
                             <span id="current-room-title"># lounge-encrypted</span>
                         </h2>
                         <div class="room-subtitle">
-                            <span class="e2ee-pill">
+                            <span class="e2ee-pill" title="End-to-End Encrypted">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                                 </svg>
-                                256-bit AES-GCM
+                                Secure Room
                             </span>
                             <span>&bull;</span>
                             <span id="room-online-text">Connecting...</span>
@@ -183,13 +162,6 @@
                 </div>
 
                 <div class="header-right">
-                    <button id="security-info-btn" class="icon-btn" title="Cryptographic Details &amp; Fingerprint">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                            <path d="M12 8v4"/>
-                            <path d="M12 16h.01"/>
-                        </svg>
-                    </button>
                     <button id="clear-chat-btn" class="icon-btn" title="Clear local screen">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="3 6 5 6 21 6"></polyline>
@@ -201,16 +173,6 @@
 
             <!-- Message Scroll Area -->
             <div id="chat-area">
-                <div class="e2ee-notice-card">
-                    <div class="notice-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
-                    </div>
-                    <h3>Zero-Knowledge End-to-End Encryption</h3>
-                    <p>All text, images, and GIFs in this session are cryptographically encrypted in your browser using AES-GCM and exchanged with RSA-OAEP. The relay server cannot read or store your content.</p>
-                </div>
             </div>
 
             <!-- Typing Banner -->
@@ -230,7 +192,7 @@
                     <polyline points="17 8 12 3 7 8"></polyline>
                     <line x1="12" y1="3" x2="12" y2="15"></line>
                 </svg>
-                <h3 style="font-size: 1.2rem; font-weight: 700;">Drop file to encrypt &amp; send</h3>
+                <h3 style="font-size: 1.2rem; font-weight: 700;">Drop file to send</h3>
                 <p style="color: var(--text-secondary); font-size: 0.9rem;">Images, GIFs, and Videos (up to 10MB)</p>
             </div>
 
@@ -263,7 +225,7 @@
                 <div class="composer-bar">
                     <div class="composer-actions-left">
                         <input type="file" id="media-input" accept="image/*,video/mp4" style="display: none;">
-                        <button id="media-btn" class="composer-btn" title="Send encrypted media (Photo / Video / GIF)" disabled>
+                        <button id="media-btn" class="composer-btn" title="Send media (Photo / Video / GIF)" disabled>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -286,9 +248,9 @@
                         </button>
                     </div>
 
-                    <input type="text" id="message-input" placeholder="Message #lounge-encrypted (Encrypted)..." autocomplete="off" disabled>
+                    <input type="text" id="message-input" placeholder="Message..." autocomplete="off" disabled>
 
-                    <button id="send-btn" title="Send encrypted message" disabled>
+                    <button id="send-btn" title="Send message" disabled>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="22" y1="2" x2="11" y2="13"></line>
                             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -299,45 +261,7 @@
         </main>
     </div>
 
-    <!-- Security Info Modal -->
-    <div id="security-modal" class="app-modal">
-        <div class="modal-content-card">
-            <div class="modal-header">
-                <h3 style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        <path d="M9 12l2 2 4-4"/>
-                    </svg>
-                    Cryptographic Verification
-                </h3>
-                <button id="close-security-btn" class="icon-btn" title="Close">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
-                    Fedelissimi Chat leverages the standard W3C <strong>Web Cryptography API</strong> built natively into modern browsers. Your private key never leaves this memory segment.
-                </p>
-
-                <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px;">
-                    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">Payload Encryption</div>
-                    <div style="font-size: 0.92rem; font-weight: 600; color: var(--accent-emerald);">AES-GCM (256-bit symmetric key)</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Unique 96-bit initialization vector (IV) generated per message</div>
-                </div>
-
-                <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px;">
-                    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">Key Exchange</div>
-                    <div style="font-size: 0.92rem; font-weight: 600; color: var(--primary-light);">RSA-OAEP (2048-bit asymmetric with SHA-256)</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Automated ephemeral peer-to-peer distribution</div>
-                </div>
-
-                <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px;">
-                    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">Your RSA Public Key Fingerprint</div>
-                    <div id="sec-pubkey-fingerprint" style="font-family: monospace; font-size: 0.75rem; color: var(--text-secondary); word-break: break-all; background: rgba(0,0,0,0.4); padding: 8px; border-radius: 6px;">Initializing...</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Main App Container End -->
 
     <!-- Media Lightbox Modal -->
     <div id="lightbox-modal" class="app-modal">
@@ -382,7 +306,7 @@
             </div>
             <div class="modal-body">
                 <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
-                    Enter a room name to join or create. Each room features an isolated peer-to-peer 256-bit AES-GCM encryption cluster.
+                    Enter a room name to join or create.
                 </p>
 
                 <div class="room-input-container">

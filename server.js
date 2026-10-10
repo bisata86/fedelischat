@@ -159,6 +159,11 @@ io.on('connection', (socket) => {
         });
     });
 
+    socket.on('key_share_failed', (data) => {
+        // Fallback: ask target to generate key if peer didn't have it
+        io.to(data.targetId).emit('generate_group_key', { room: data.room });
+    });
+
     socket.on('chat_message', (data) => {
         const room = data.room || socket.currentRoom;
         if (!room) return;
